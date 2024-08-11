@@ -4,14 +4,12 @@
   "description": "A Cloudflare worker that turns a Google Spreadsheet into a JSON API endpoint",
   "main": "index.js",
   "scripts": {
+    "dev": "wrangler dev",
     "build": "wrangler build",
     "publish": "wrangler publish"
   },
   "author": "Max Goodhart <c@chromakode.com>",
   "license": "MIT",
-  "devDependencies": {
-    "@cloudflare/wrangler": "^1.10.2"
-  },
   "dependencies": {
     "lodash.camelcase": "^4.3.0",
     "lodash.mapkeys": "^4.6.0",
