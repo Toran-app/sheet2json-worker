@@ -1,16 +1,16 @@
-const Papa = require('papaparse')
-const camelCase = require('lodash.camelcase')
-const mapKeys = require('lodash.mapkeys')
+import { parse } from 'papaparse'
+import camelCase from 'lodash.camelcase'
+// import mapKeys from 'lodash.mapkeys'
 
-const transformRows = require('./transform')
+import transformRows from './transform'
 
-addEventListener('fetch', event => {
-  event.respondWith(generateJSON())
-})
+// addEventListener('fetch', event => {
+//   event.respondWith(generateJSON())
+// })
 
 function parseCSV(csvString, config) {
   return new Promise((resolve, reject) => {
-    Papa.parse(csvString, {
+    parse(csvString, {
       ...config,
       complete: ({ data }) => resolve(data),
       error: reject,
@@ -18,12 +18,12 @@ function parseCSV(csvString, config) {
   })
 };
 
-async function generateJSON() {
-  const url = `https://docs.google.com/spreadsheets/d/${DOC_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=${encodeURIComponent(SHEET_NAME)}`
+async function generateJSON(env) {
+  const url = `https://docs.google.com/spreadsheets/d/${env.DOC_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=${encodeURIComponent(env.SHEET_NAME)}`
 
   const resp = await fetch(url, {
     cf: {
-      cacheTtl: Number(TTL),  // seconds
+      cacheTtl: Number(env.TTL),  // seconds
     },
   })
   const csv = await resp.text()
@@ -34,11 +34,17 @@ async function generateJSON() {
   })
   const transformedRows = transformRows(rows)
 
-  response = new Response(JSON.stringify(transformedRows), {
+  let response = new Response(JSON.stringify(transformedRows), {
     headers: {
-      'Cache-Control': `max-age=${TTL}`,
+      'Cache-Control': `max-age=${env.TTL}`,
       'Content-Type': 'application/json',
     },
   })
   return response
+}
+
+export default {
+  async fetch(request, env, ctx) {
+    return await generateJSON(env)
+  }
 }
